@@ -16,3 +16,9 @@ $wpdb->get_var("SELECT * FROM wp_users WHERE id = " . esc_sql($variable)); // Vu
 // // XSS: Outputting unsanitized data
 $variable = $_GET['name'];
 print($variable); // Vulnerable XSS
+
+echo $variable; // Vulnerable XSS
+$variable = esc_html( $variable );
+
+_e( $variable, 'my-theme' );
+
