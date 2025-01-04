@@ -98,6 +98,7 @@ class XSSDetector extends NodeVisitorAbstract
             $this->variables[$varName] = $this->isSanitized($node->expr);
         }
     }
+    
 
     private function isSanitized(Node $node): bool
     {

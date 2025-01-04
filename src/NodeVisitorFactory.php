@@ -11,6 +11,7 @@ class NodeVisitorFactory
         return [
             new SQLInjectionDetector( $fileName ),
             new XSSDetector( $fileName ),
+            new LFIDetector( $fileName ),
             new FileUploadDetector(),
         ];
     }
