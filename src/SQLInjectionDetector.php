@@ -74,6 +74,16 @@ class SQLInjectionDetector extends NodeVisitorAbstract
             return $this->isUnsanitizedInput($queryNode->right);
         }
 
+        // Handle function calls in queries
+        if ($queryNode instanceof Node\Expr\FuncCall) {
+            $functionName = $queryNode->name instanceof Node\Name ? $queryNode->name->toString() : null;
+
+            // Safe if the function itself is safe
+            if (in_array($functionName, ['esc_sql'], true)) {
+                return false;
+            }
+        }
+
         // Check variables or function calls directly
         return $this->isUnsanitizedInput($queryNode);
     }
