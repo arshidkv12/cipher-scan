@@ -6,10 +6,10 @@ use PhpParser\NodeTraverser;
 
 class SecurityIssueDetector
 {
-    public static function analyze($stmts)
+    public static function analyze($stmts, $fileName)
     {
         $traverser = new NodeTraverser;
-        foreach (NodeVisitorFactory::create() as $visitor) {
+        foreach (NodeVisitorFactory::create($fileName) as $visitor) {
             $traverser->addVisitor($visitor);
         }
         $traverser->traverse($stmts);

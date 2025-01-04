@@ -6,11 +6,11 @@ use PhpParser\NodeVisitor;
 
 class NodeVisitorFactory
 {
-    public static function create(): array
+    public static function create( $fileName ): array
     {
         return [
-            new SQLInjectionDetector(),
-            new XSSDetector(),
+            new SQLInjectionDetector( $fileName ),
+            new XSSDetector( $fileName ),
             new FileUploadDetector(),
         ];
     }

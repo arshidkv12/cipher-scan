@@ -7,7 +7,14 @@ use PhpParser\NodeVisitorAbstract;
 
 class SQLInjectionDetector extends NodeVisitorAbstract
 {
-    public $variables = []; // Tracks variables and their sanitization status
+    public $variables = [];  
+
+    private $fileName;
+
+    public function __construct($fileName)
+    {
+        $this->fileName = $fileName;
+    }
 
     public function enterNode(Node $node)
     {
@@ -21,7 +28,7 @@ class SQLInjectionDetector extends NodeVisitorAbstract
             if ($this->isWpdbQueryMethod($node)) {
                 foreach ($node->args as $arg) {
                     if ($this->isVulnerableSQLQuery($arg->value)) {
-                        echo "Potential SQL injection detected in method call at line {$node->getLine()}.\n";
+                        echo "SQL injection detected - $this->fileName:{$node->getLine()}.\n";
                     }
                 }
             }

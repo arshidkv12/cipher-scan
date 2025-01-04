@@ -15,7 +15,7 @@ foreach ($files as $file) {
         try {
             $code = file_get_contents($file);
             $stmts = $parser->parse($code);
-            SecurityIssueDetector::analyze($stmts);
+            SecurityIssueDetector::analyze($stmts, $file);
         } catch (Error $e) {
             echo "Error parsing file {$file}: {$e->getMessage()}\n";
         }
