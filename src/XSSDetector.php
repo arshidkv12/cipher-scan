@@ -15,7 +15,6 @@ class XSSDetector extends NodeVisitorAbstract
     private $variables = [];
     private $fileName;
 
-    // Constructor to accept the file name
     public function __construct($fileName)
     {
         $this->fileName = $fileName;
