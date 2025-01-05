@@ -10,8 +10,8 @@ class NodeVisitorFactory
     {
         return [
             new SQLInjectionDetector($fileName),
-            new XSSDetector($fileName),
-            new LFIDetector($fileName),
+            // new XSSDetector($fileName),
+            // new LFIDetector($fileName),
             new NonceCheckVisitor($fileName, $functionDefinitions),
             new FileUploadDetector(),
         ];

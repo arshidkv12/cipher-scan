@@ -10,7 +10,15 @@ use SecurityChecker\NodeVisitorFactory;
 
 $directory = __DIR__ . '/plugin';
 $parser = (new ParserFactory())->createForNewestSupportedVersion();
-$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
+
+$directoryIterator = new RecursiveDirectoryIterator($directory);
+
+// Use CallbackFilterIterator to filter out the vendor folder
+$iterator = new RecursiveIteratorIterator($directoryIterator);
+$files = new CallbackFilterIterator($iterator, function($current, $key, $iterator) {
+    // Skip the vendor directory
+    return strpos($current->getPathname(), '/vendor/') === false;
+});
 
 foreach ($files as $file) {
     if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
