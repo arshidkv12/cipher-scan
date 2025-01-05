@@ -1,14 +1,14 @@
-<?php
+<?php 
 
 namespace SecurityChecker;
 
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
 use PhpParser\Node\Stmt\Echo_;
-use PhpParser\Node\Expr\Print_;   
+use PhpParser\Node\Expr\Print_;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\ArrayDimFetch;
 
 class XSSDetector extends NodeVisitorAbstract
 {
@@ -20,11 +20,11 @@ class XSSDetector extends NodeVisitorAbstract
         $this->fileName = $fileName;
     }
 
-        
     public function enterNode(Node $node)
     { 
-
+        // Track assignments of user input like $_GET or $_REQUEST
         if ($node instanceof Node\Expr\Assign) {
+            $this->trackUserInputAssignment($node);
             $this->trackVariableSanitization($node);
         }
 
@@ -32,7 +32,7 @@ class XSSDetector extends NodeVisitorAbstract
         if ($node instanceof Echo_) {
             $this->checkForEcho($node);
         }
-        
+
         // Check for print statements
         if ($node instanceof Print_) {
             $this->checkForPrint($node);
@@ -51,14 +51,13 @@ class XSSDetector extends NodeVisitorAbstract
             if ($expr instanceof Variable) {
                 // Check if the assigned value is sanitized
                 $varName = $expr->name;
-                if( !$this->variables[$varName] ){
+                if (!$this->variables[$varName]) {
                     echo "XSS Risk detected - {$this->fileName}:{$node->getLine()} \n";
                 }
             }
         }
         return false;
     }
-    
 
     private function checkForPrint(Print_ $node)
     {
@@ -66,12 +65,11 @@ class XSSDetector extends NodeVisitorAbstract
         $expr = $node->expr;
         if ($expr instanceof Variable) {
             $varName = $expr->name;
-            if( !$this->variables[$varName] ){
+            if (!$this->variables[$varName]) {
                 echo "XSS Risk detected - {$this->fileName}:{$node->getLine()} \n";
             }        
         }
     }
-
 
     private function checkForEFunctionCall(FuncCall $node)
     {
@@ -80,24 +78,38 @@ class XSSDetector extends NodeVisitorAbstract
             // Check if the first argument is a variable (could be user input)
             if ($node->args[0]->value instanceof Variable) {
                 $varName = $node->args[0]->value->name;
-                if( !$this->variables[$varName] ){
+                if (!$this->variables[$varName]) {
                     echo "XSS Risk detected - {$this->fileName}:{$node->getLine()} \n";
                 }            
             }
         }
     }
 
-
     private function trackVariableSanitization(Node\Expr\Assign $node)
     {
         if ($node->var instanceof Node\Expr\Variable) {
             $varName = $node->var->name;
 
-            // Check if the assigned value is sanitized
-            $this->variables[$varName] = $this->isSanitized($node->expr);
+            if( !$this->variables[$varName]){ 
+                $this->variables[$varName] = $this->isSanitized($node->expr);
+            }
         }
     }
-    
+
+    private function trackUserInputAssignment(Node\Expr\Assign $node)
+    {
+        if ($node->expr instanceof ArrayDimFetch && 
+            ($node->expr->var instanceof Variable && 
+            in_array($node->expr->var->name, ['_GET', '_REQUEST'], true))) {
+            // If the variable is assigned from $_GET or $_REQUEST, mark it as user input
+            $varName = $node->var->name;
+            $this->variables[$varName] = false; // Mark as unsafe by default
+        } elseif ($node->expr instanceof Variable) {  
+            // If it's just a regular assignment between variables, mark it as safe
+            $varName = $node->var->name;
+            $this->variables[$varName] = true; // This is a safe assignment (not user input)
+        }
+    }
 
     private function isSanitized(Node $node): bool
     {
@@ -117,5 +129,3 @@ class XSSDetector extends NodeVisitorAbstract
         return false; // Default to unsafe
     }
 }
-
- 

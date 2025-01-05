@@ -14,8 +14,9 @@ $variable = $_REQUEST['id'];
 $wpdb->get_var("SELECT * FROM wp_users WHERE id = " . esc_sql($variable)); // Vulnerable SQL injection
 
 // // XSS: Outputting unsanitized data
-$variable = $_GET['name'];
-print($variable); // Vulnerable XSS
+$variable = 'ds';
+$variable1 = $variable;
+print($variable1); // Vulnerable XSS
 
 echo $variable; // Vulnerable XSS
 $variable = esc_html( $variable );
